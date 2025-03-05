@@ -26,8 +26,7 @@ pragma solidity ^0.8.18;
 /**
  * @title DecStableCoin
  * @author Vectordotsats
- * @notice
- * Collateral: Exxogenous(ETH, BTC)
+ * @notice Collateral: Exxogenous(ETH, BTC)
  * Stability Mechanism: Algorithmically adjusted
  * Relative Stability: Pegged to 1USD
  *
@@ -36,7 +35,8 @@ pragma solidity ^0.8.18;
 
 // IMPORTS
 import {ERC20Burnable, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol"; //Ownable in the sense that the Stable coin is governed by our Logic.
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+//Ownable in the sense that the Stable coin is governed by our Logic.
 
 // ERRORS
 error StableCoin_MustBeGreaterThanZero();
@@ -44,7 +44,7 @@ error StableCoin_BalanceIsTooLow();
 error StableCoin_NotZeroAddress();
 
 contract DecStableCoin is ERC20Burnable, Ownable {
-    constructor() ERC20("DecStableCoin", "DSC") {}
+    constructor() ERC20("DecStableCoin", "DSC") Ownable(msg.sender) {}
 
     function burn(uint256 _amount) public override onlyOwner {
         //override overrides the Burn function in ERC20Burnable
