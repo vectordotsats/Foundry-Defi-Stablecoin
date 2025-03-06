@@ -25,9 +25,27 @@ pragma solidity ^0.8.18;
 import {DecStableCoin} from "./DecStableCoin.sol";
 
 contract DSCEngine {
-    function depositCollateralToMintDsc(uint256 _amount) external {}
+    /////////////////
+    // Errors ////
+    /////////////////
+    error DSCEngine_EnterValueGreaterThanZero();
 
-    // function depositCollateral() external {}
+    /////////////////
+    // Modifiers ////
+    /////////////////
+    modifier moeThanZero(uint256 _amount) {
+        if (_amount == 0) {
+            revert DSCEngine_EnterValueGreaterThanZero();
+        }
+        _;
+    }
+
+    // function depositCollateralToMintDsc() external {}
+
+    function depositCollateral(
+        address tokenColateralAddress,
+        uint256 amountColateral
+    ) external {}
 
     // function redeemCollateralToBurnDsc(uint256 _amount) external {}
 
