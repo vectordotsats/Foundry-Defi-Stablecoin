@@ -23,12 +23,22 @@ pragma solidity ^0.8.18;
  */
 
 import {DecStableCoin} from "./DecStableCoin.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract DSCEngine {
+contract DSCEngine is ReentrancyGuard {
     /////////////////
-    // Errors ////
+    // Errors ///////
     /////////////////
     error DSCEngine_EnterValueGreaterThanZero();
+    error DSCEngine_EnterValidToken();
+    error DSCEngine_TokenAddressesAndPriceFeedAddressesMustHaveSameLength();
+    error DSCEngine_TokenNotAllowed();
+
+    ////////////////////////
+    // State Variables ////
+    ///////////////////////
+    mapping(address token => address priceFeed) private s_tokenToPriceFeed;
+    DecStableCoin private immutable i_dsc;
 
     /////////////////
     // Modifiers ////
@@ -40,20 +50,49 @@ contract DSCEngine {
         _;
     }
 
-    // function depositCollateralToMintDsc() external {}
+    modifier isAllowedToken(address _token) {
+        if (s_tokenToPriceFeed[_token] == address(0)) {
+            revert DSCEngine_TokenNotAllowed();
+        }
+        _;
+    }
+
+    /////////////////
+    // Functions ////
+    /////////////////
+    constructor(
+        address[] memory tokenAddresses,
+        address[] memory priceFeedAddresses,
+        address dscAddress
+    ) {
+        if (tokenAddresses.length != priceFeedAddresses.length) {
+            revert DSCEngine_TokenAddressesAndPriceFeedAddressesMustHaveSameLength();
+        }
+        for (uint256 i = 0; i < tokenAddresses.length; i++) {
+            s_tokenToPriceFeed[tokenAddresses[i] = priceFeedAddresses[i]];
+            i_dsc = DecStableCoin(dscAddress);
+        }
+    }
+
+    /////////////////
+    // Functions ////
+    /////////////////
+    function depositCollateralToMintDsc() external {}
 
     function depositCollateral(
         address tokenColateralAddress,
-        uint256 amountColateral
+        uint256 amountColateral,
+        isAllowedToken,
+        nonReentrant
     ) external {}
 
-    // function redeemCollateralToBurnDsc(uint256 _amount) external {}
+    function redeemCollateralToBurnDsc(uint256 _amount) external {}
 
-    // function redeemCollateral() external {}
+    function redeemCollateral() external {}
 
-    // function mintDsc() external {}
+    function mintDsc() external {}
 
-    // function burnDsc(uint256 _amount) external {}
+    function burnDsc(uint256 _amount) external {}
 
     /* Treshhold for burning 150%
     Collateral of $100 ETH
@@ -62,7 +101,7 @@ contract DSCEngine {
     So when the value collateral goes down to $74, that is undercollaterized. The system gives ppl opportunity for other users to liquidate the position of the careless users who lets their position be undercollateralized. This way the liuidate party looses the $74 worth of ETH.
     */
 
-    // function liquidatePosition() external {}
+    function liquidatePosition() external {}
 
-    // function getHealthFactor() external view {}
+    function getHealthFactor() external view {}
 }
