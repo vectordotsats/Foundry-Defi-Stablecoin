@@ -21,9 +21,9 @@ pragma solidity ^0.8.18;
  * This contract is the DSCEngine that governs this Stable Coin. It handles all the Logic including minting, burning as well as depositing and withrawing collateral.
  * @notice this contract is very loosely based on the MarkerDAO DSS (DAI) system.
  */
-
 import {DecStableCoin} from "./DecStableCoin.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract DSCEngine is ReentrancyGuard {
     /////////////////
@@ -38,6 +38,7 @@ contract DSCEngine is ReentrancyGuard {
     // State Variables ////
     ///////////////////////
     mapping(address token => address priceFeed) private s_tokenToPriceFeed;
+    mapping(address user => mapping(address token => uint256 amount)) private s_userToTokenCollateral;
     DecStableCoin private immutable i_dsc;
 
     /////////////////
@@ -60,11 +61,7 @@ contract DSCEngine is ReentrancyGuard {
     /////////////////
     // Functions ////
     /////////////////
-    constructor(
-        address[] memory tokenAddresses,
-        address[] memory priceFeedAddresses,
-        address dscAddress
-    ) {
+    constructor(address[] memory tokenAddresses, address[] memory priceFeedAddresses, address dscAddress) {
         if (tokenAddresses.length != priceFeedAddresses.length) {
             revert DSCEngine_TokenAddressesAndPriceFeedAddressesMustHaveSameLength();
         }
@@ -79,14 +76,15 @@ contract DSCEngine is ReentrancyGuard {
     /////////////////
     function depositCollateralToMintDsc() external {}
 
-    function depositCollateral(
-        address tokenColateralAddress,
-        uint256 amountColateral,
-        isAllowedToken,
+    function depositCollateral(address tokenColateralAddress, uint256 amountColateral)
+        external
+        isAllowedToken(tokenColateralAddress)
         nonReentrant
-    ) external {}
+    {
+        s_userToTokenCollateral[msg.sender][tokenColateralAddress] += amountColateral;
+    }
 
-    function redeemCollateralToBurnDsc(uint256 _amount) external {}
+    function redeemCollateralToBurnDsc() external {}
 
     function redeemCollateral() external {}
 
