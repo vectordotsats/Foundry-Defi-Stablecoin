@@ -22,8 +22,8 @@ pragma solidity ^0.8.18;
  * @notice this contract is very loosely based on the MarkerDAO DSS (DAI) system.
  */
 import {DecStableCoin} from "./DecStableCoin.sol";
-
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IERC20} from "openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract DSCEngine is ReentrancyGuard {
     /////////////////
@@ -33,6 +33,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine_EnterValidToken();
     error DSCEngine_TokenAddressesAndPriceFeedAddressesMustHaveSameLength();
     error DSCEngine_TokenNotAllowed();
+    error DscEngine_COllateralTranferFailed();
 
     ////////////////////////
     // State Variables ////
@@ -40,6 +41,15 @@ contract DSCEngine is ReentrancyGuard {
     mapping(address token => address priceFeed) private s_tokenToPriceFeed;
     mapping(address user => mapping(address token => uint256 amount)) private s_userToTokenCollateral;
     DecStableCoin private immutable i_dsc;
+
+    ////////////////////////
+    // Events          ////
+    ///////////////////////
+    Event DepositedCollateral(
+        address indexed user,
+        address indexed token,
+        uint256 amount
+    )
 
     /////////////////
     // Modifiers ////
@@ -82,6 +92,11 @@ contract DSCEngine is ReentrancyGuard {
         nonReentrant
     {
         s_userToTokenCollateral[msg.sender][tokenColateralAddress] += amountColateral;
+        emit DepositedCollateral(msg.sender, tokenColateralAddress, amountColateral);
+
+        bool success = IERC20(tokenColateralAddress).transferFrom(msg.sender, address(this), amountColateral);
+        if(!success) {
+            revert DscEngine_COllateralTranferFailed();        }
     }
 
     function redeemCollateralToBurnDsc() external {}
