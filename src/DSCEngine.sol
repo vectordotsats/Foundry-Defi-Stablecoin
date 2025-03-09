@@ -23,7 +23,7 @@ pragma solidity ^0.8.18;
  */
 import {DecStableCoin} from "./DecStableCoin.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {IERC20} from "openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract DSCEngine is ReentrancyGuard {
     /////////////////
@@ -43,13 +43,9 @@ contract DSCEngine is ReentrancyGuard {
     DecStableCoin private immutable i_dsc;
 
     ////////////////////////
-    // Events          ////
+    //       Events    ////
     ///////////////////////
-    Event DepositedCollateral(
-        address indexed user,
-        address indexed token,
-        uint256 amount
-    )
+    event DepositedCollateral(address indexed user, address indexed token, uint256 amount);
 
     /////////////////
     // Modifiers ////
@@ -95,8 +91,9 @@ contract DSCEngine is ReentrancyGuard {
         emit DepositedCollateral(msg.sender, tokenColateralAddress, amountColateral);
 
         bool success = IERC20(tokenColateralAddress).transferFrom(msg.sender, address(this), amountColateral);
-        if(!success) {
-            revert DscEngine_COllateralTranferFailed();        }
+        if (!success) {
+            revert DscEngine_COllateralTranferFailed();
+        }
     }
 
     function redeemCollateralToBurnDsc() external {}
