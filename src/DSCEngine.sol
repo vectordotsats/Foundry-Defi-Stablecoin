@@ -41,6 +41,7 @@ contract DSCEngine is ReentrancyGuard {
     mapping(address token => address priceFeed) private s_tokenToPriceFeed;
     mapping(address user => mapping(address token => uint256 amount)) private s_userToTokenCollateral;
     DecStableCoin private immutable i_dsc;
+    mapping(address user => uint256 amount) private s_userToDscMinted;
 
     ////////////////////////
     //       Events    ////
@@ -50,7 +51,7 @@ contract DSCEngine is ReentrancyGuard {
     /////////////////
     // Modifiers ////
     /////////////////
-    modifier moeThanZero(uint256 _amount) {
+    modifier moreThanZero(uint256 _amount) {
         if (_amount == 0) {
             revert DSCEngine_EnterValueGreaterThanZero();
         }
@@ -64,9 +65,9 @@ contract DSCEngine is ReentrancyGuard {
         _;
     }
 
-    /////////////////
-    // Functions ////
-    /////////////////
+    ///////////////////////////
+    // External & Public Functions ////
+    //////////////////////////
     constructor(address[] memory tokenAddresses, address[] memory priceFeedAddresses, address dscAddress) {
         if (tokenAddresses.length != priceFeedAddresses.length) {
             revert DSCEngine_TokenAddressesAndPriceFeedAddressesMustHaveSameLength();
@@ -77,9 +78,6 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    /////////////////
-    // Functions ////
-    /////////////////
     function depositCollateralToMintDsc() external {}
 
     function depositCollateral(address tokenColateralAddress, uint256 amountColateral)
@@ -100,9 +98,13 @@ contract DSCEngine is ReentrancyGuard {
 
     function redeemCollateral() external {}
 
-    function mintDsc() external {}
+    function mintDsc(uint256 amountDscMinted) external moreThanZero(amountDscMinted) nonReentrant {
+        s_userToDscMinted[msg.sender] += amountDscMinted;
+        // Need to revert if amount of Dsc minted is greater than the value of the collateral.
+        _revertIfHealthFactorIsBroken(msg.sender);
+    }
 
-    function burnDsc(uint256 _amount) external {}
+    function burnDsc() external {}
 
     /* Treshhold for burning 150%
     Collateral of $100 ETH
@@ -114,4 +116,25 @@ contract DSCEngine is ReentrancyGuard {
     function liquidatePosition() external {}
 
     function getHealthFactor() external view {}
+
+    /////////////////////////////////////
+    // Internal & Private Functions ////
+    ///////////////////////////////////
+    function _getAccountInformation(address user)
+        private
+        view
+        returns (uint256 dscMinted, uint256 totalCollateralInUSD)
+    {
+        dscMinted = s_userToDscMinted[user];
+    }
+
+    function _healthFactor(address user) private view returns (uint256) {
+        (uint256 dscMinted, uint256 totalCollateralInUsd) = _getAccountInformation(user);
+    }
+
+    function _revertIfHealthFactorIsBroken(address user) internal view {}
 }
+
+/////////////////////////////////////
+// Public & External Functions ////
+///////////////////////////////////
