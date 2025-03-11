@@ -42,6 +42,7 @@ contract DSCEngine is ReentrancyGuard {
     mapping(address user => mapping(address token => uint256 amount)) private s_userToTokenCollateral;
     DecStableCoin private immutable i_dsc;
     mapping(address user => uint256 amount) private s_userToDscMinted;
+    address[] private _collateralTokens;
 
     ////////////////////////
     //       Events    ////
@@ -65,15 +66,16 @@ contract DSCEngine is ReentrancyGuard {
         _;
     }
 
-    ///////////////////////////
-    // External & Public Functions ////
-    //////////////////////////
+    //////////////////
+    // Functions ////
+    /////////////////
     constructor(address[] memory tokenAddresses, address[] memory priceFeedAddresses, address dscAddress) {
         if (tokenAddresses.length != priceFeedAddresses.length) {
             revert DSCEngine_TokenAddressesAndPriceFeedAddressesMustHaveSameLength();
         }
         for (uint256 i = 0; i < tokenAddresses.length; i++) {
             s_tokenToPriceFeed[tokenAddresses[i] = priceFeedAddresses[i]];
+            s_collateralTokens.push[tokenAddresses[i]];
             i_dsc = DecStableCoin(dscAddress);
         }
     }
@@ -126,6 +128,8 @@ contract DSCEngine is ReentrancyGuard {
         returns (uint256 dscMinted, uint256 totalCollateralInUSD)
     {
         dscMinted = s_userToDscMinted[user];
+        // Need to convert collateral to USD since collateral can be in WETH, WBTC, so we need to tap in from price feed.
+        totalCollateralInUSD = getAccountCollateralValueInUsd(user);
     }
 
     function _healthFactor(address user) private view returns (uint256) {
@@ -138,3 +142,4 @@ contract DSCEngine is ReentrancyGuard {
 /////////////////////////////////////
 // Public & External Functions ////
 ///////////////////////////////////
+function getAccountCollateralValueInUsd(address user) public view returns (uint256) {}
