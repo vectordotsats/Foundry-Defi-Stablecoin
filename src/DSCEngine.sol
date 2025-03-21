@@ -46,6 +46,8 @@ contract DSCEngine is ReentrancyGuard {
     address[] private s_collateralTokens;
     uint256 private ADDITIONAL_FEES = 1e10;
     uint256 private PRECISION = 1e18;
+    uint256 private LIQUIDATION_THRESHOLD = 50;
+    uint256 private LIQUIDATION_APPROXIMATOR = 100;
 
     ////////////////////////
     //       Events    ////
@@ -137,6 +139,8 @@ contract DSCEngine is ReentrancyGuard {
 
     function _healthFactor(address user) private view returns (uint256) {
         (uint256 dscMinted, uint256 totalCollateralInUsd) = _getAccountInformation(user);
+
+        uint collateralAdjustedForThreshold = (totalCollateralInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_APPROXIMATOR;
     }
 
     function _revertIfHealthFactorIsBroken(address user) internal view {}
