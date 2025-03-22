@@ -44,10 +44,10 @@ contract DSCEngine is ReentrancyGuard {
     DecStableCoin private immutable i_dsc;
     mapping(address user => uint256 amount) private s_userToDscMinted;
     address[] private s_collateralTokens;
-    uint256 private ADDITIONAL_FEES = 1e10;
-    uint256 private PRECISION = 1e18;
-    uint256 private LIQUIDATION_THRESHOLD = 50;
-    uint256 private LIQUIDATION_APPROXIMATOR = 100;
+    uint256 private constant ADDITIONAL_FEES = 1e10;
+    uint256 private constant PRECISION = 1e18;
+    uint256 private constant LIQUIDATION_THRESHOLD = 50;
+    uint256 private constant LIQUIDATION_APPROXIMATOR = 100;
 
     ////////////////////////
     //       Events    ////
@@ -141,6 +141,8 @@ contract DSCEngine is ReentrancyGuard {
         (uint256 dscMinted, uint256 totalCollateralInUsd) = _getAccountInformation(user);
 
         uint collateralAdjustedForThreshold = (totalCollateralInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_APPROXIMATOR;
+
+        return (collateralAdjustedForThreshold * PRECISION) / dscMinted;
     }
 
     function _revertIfHealthFactorIsBroken(address user) internal view {}
@@ -166,5 +168,3 @@ contract DSCEngine is ReentrancyGuard {
         return((uint256(price) * ADDITIONAL_FEES) * amount) / PRECISION; // 1000 * 1e8 *(1e10) * 1000 * 1e18; 
     }
 }
-
-
