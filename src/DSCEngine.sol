@@ -35,6 +35,8 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine_TokenAddressesAndPriceFeedAddressesMustHaveSameLength();
     error DSCEngine_TokenNotAllowed();
     error DscEngine_COllateralTranferFailed();
+    error DSCEngine__BreakHeathFactor(uint256 healthFactor);
+    error DSCEngine__NotMinted();
 
     ////////////////////////
     // State Variables ////
@@ -48,6 +50,7 @@ contract DSCEngine is ReentrancyGuard {
     uint256 private constant PRECISION = 1e18;
     uint256 private constant LIQUIDATION_THRESHOLD = 50;
     uint256 private constant LIQUIDATION_APPROXIMATOR = 100;
+    uint256 private constant MINIMUM_HEALTH_FACTOR = 1;
 
     ////////////////////////
     //       Events    ////
@@ -109,6 +112,11 @@ contract DSCEngine is ReentrancyGuard {
         s_userToDscMinted[msg.sender] += amountDscMinted;
         // Need to revert if amount of Dsc minted is greater than the value of the collateral.
         _revertIfHealthFactorIsBroken(msg.sender);
+
+        bool minted = i_dsc.mint(msg.sender, amountDscMinted);
+        if (!minted) {
+            revert DSCEngine__NotMinted();
+        }
     }
 
     function burnDsc() external {}
@@ -145,7 +153,12 @@ contract DSCEngine is ReentrancyGuard {
         return (collateralAdjustedForThreshold * PRECISION) / dscMinted;
     }
 
-    function _revertIfHealthFactorIsBroken(address user) internal view {}
+    function _revertIfHealthFactorIsBroken(address user) internal view {
+        uint256 _actualHealthFactor = _healthFactor(user);
+        if(_actualHealthFactor < MINIMUM_HEALTH_FACTOR) {
+            revert DSCEngine__BreakHeathFactor(_actualHealthFactor);
+        }
+    }
 
 
     /////////////////////////////////////
