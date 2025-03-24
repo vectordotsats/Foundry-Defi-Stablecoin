@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
 import {Script} from "forge-std/Script.sol";
@@ -15,6 +15,9 @@ contract HelperConfig is Script {
         uint256 deployerKey;
     }
     
+    uint8 private constant DECIMAL = 8;
+    int256 private constant ETH_USD_PRICE = 2000e8;
+    int256 private constant BTC_USD_PRICE = 1000e8;
     NetworkConfig public activeNetworkConfig;
 
     constructor () {
@@ -38,14 +41,27 @@ contract HelperConfig is Script {
         return sepoliaEthConfig;
     }
 
-    function getOrCreateAnvilConfig() public view returns(NetworkConfig memory anvilConfig) {
+    function getOrCreateAnvilConfig() public returns(NetworkConfig memory anvilConfig) {
         
         // Check to see if we set the active config network.
         if(activeNetworkConfig.wethUsdPriceFeed != address(0)) {
             return activeNetworkConfig;
         }
 
+        vm.startBroadcast();
+        MockV3Aggregator ethUsdPriceFeed = new MockV3Aggregator(
+            DECIMAL,
+            ETH_USD_PRICE
+        );
+        ERC20Mock wethMock = new ERC20Mock();
 
+        MockV3Aggregator btcUsdPriceFeed = new MockV3Aggregator(
+            DECIMAL,
+            BTC_USD_PRICE
+        );
+        ERC20Mock wbtcMock = new ERC20Mock();
+
+        vm.stopBroadcast();
     
     }
 }
