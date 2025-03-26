@@ -11,7 +11,7 @@ contract DeployDecStableCoin is Script {
     address[] public tokenAddresses;
     address[] public priceFeedAddresses;
 
-    function run() public returns (DecStableCoin, DSCEngine) {
+    function run() public returns (DecStableCoin, DSCEngine, HelperConfig) {
         HelperConfig config = new HelperConfig();
         (address wethUsdPriceFeed, address wbtcUsdPriceFeed, address weth, address wbtc, uint256 deployerKey) = config.activeNetworkConfig();
 
@@ -25,6 +25,6 @@ contract DeployDecStableCoin is Script {
         decStableCoin.transferOwnership(address(engine));
         vm.stopBroadcast();
 
-        return (decStableCoin, engine);
+        return (decStableCoin, engine, config);
     }
 }
