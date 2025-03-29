@@ -18,6 +18,7 @@ contract DSCEngineTest is Test {
     function setUp() public {
         deployer = new DeployDecStableCoin(); 
         (dsc, engine, config) = deployer.run();
+        (ethUsdPriceFeed,, weth,,) = config.activeNetworkConfig();
     }
 
     /////////////////////
@@ -25,6 +26,11 @@ contract DSCEngineTest is Test {
     ////////////////////
 
     function testGetUsdValue() public {
+        uint256 ethAmount = 15e18;
+        //15e18 * 2000 = 30000e18;
+        uint256 expectedEthPrice = 30000e18;
 
+        uint256 actualEthPrice = engine.getUsdValue(weth, ethAmount);
+        assertEq(actualEthPrice, expectedEthPrice);
     }
 }
