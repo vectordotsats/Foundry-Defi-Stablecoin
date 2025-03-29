@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {DeployDecStableCoin} from "../../script/DeployDecStableCoin.sol";
 import {DecStableCoin} from "../../src/DecStableCoin.sol";
 import {DSCEngine} from "../../src/DSCEngine.sol";
@@ -14,6 +14,8 @@ contract DSCEngineTest is Test {
     DecStableCoin dsc;
     DSCEngine engine;
     HelperConfig config;
+    address ethUsdPriceFeed;
+    address weth;
 
     function setUp() public {
         deployer = new DeployDecStableCoin(); 
@@ -28,9 +30,11 @@ contract DSCEngineTest is Test {
     function testGetUsdValue() public {
         uint256 ethAmount = 15e18;
         //15e18 * 2000 = 30000e18;
-        uint256 expectedEthPrice = 30000e18;
+        uint256 expectedUsd = 30000e18;
 
-        uint256 actualEthPrice = engine.getUsdValue(weth, ethAmount);
-        assertEq(actualEthPrice, expectedEthPrice);
+        uint256 actualUsd = engine.getUsdValue(weth, ethAmount);
+        assertEq(actualUsd, expectedUsd);
+        console.log("Actual USD:", actualUsd);
+        console.log("Expected USD:", expectedUsd);
     }
 }
